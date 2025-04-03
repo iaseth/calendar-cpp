@@ -4,6 +4,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 using namespace std;
 
@@ -17,6 +19,17 @@ const string monthNames[] = {
 	"January", "February", "March", "April", "May", "June",
 	"July", "August", "September", "October", "November", "December"
 };
+
+std::pair<int, int> getTerminalSize() {
+	struct winsize w;
+
+	// Get terminal size
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) {
+		return {-1, -1}; // Return -1 if failed
+	}
+
+	return {w.ws_col, w.ws_row}; // (Width, Height)
+}
 
 // Function to get the number of days in a given month
 int getDaysInMonth(int month, int year) {
@@ -102,6 +115,8 @@ void printHelp() {
 
 // Main function
 int main(int argc, char* argv[]) {
+	auto [width, height] = getTerminalSize();
+
 	// Get current month and year as defaults
 	time_t now = time(0);
 	struct tm *current = localtime(&now);
